@@ -1,0 +1,6 @@
+package billeteras.modelo;
+
+public enum TipoNotificacion {
+    SALDO_BAJO, PROGRAMADA_PROXIMA, PROGRAMADA_EJECUTADA, OPERACION_RECHAZADA,
+    CAMBIO_NIVEL, CANJE, REVERSION, SEGURIDAD
+}

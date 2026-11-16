@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Billeteras · SavingCol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Newsreader:opsz,wght@6..72,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #FCFFFD; --sheet: #FCFFFD; --fondo-2: #EFF8F3; --ink: #141414; --muted: #6D6A63; --cobalt: #1F3FB0; --rojo: #A3321F;
+  --rule: rgba(20,20,20,.9); --ease: cubic-bezier(.2,.8,.2,1);
+  --H: min(60vw, 40svh); --W: calc(var(--H) * .62);
+  --sans: "Inter Tight", system-ui, sans-serif; --serif: "Newsreader", Georgia, serif;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink); font: 500 12px/1.4 var(--sans); letter-spacing: .06em; overflow: hidden;
+  display: grid; grid-template-rows: 84px auto minmax(0, 1fr) auto 44px; height: 100svh;
+}
+::selection { background: var(--cobalt); color: var(--sheet); }
+button, input, select { font: inherit; letter-spacing: inherit; color: inherit; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--cobalt); outline-offset: 3px; }
+h1, h2, p, ul, dl, dd { margin: 0; } ul { padding: 0; list-style: none; }
+.caja { border: 1px solid var(--rule); padding: 9px 14px; display: inline-block; white-space: nowrap; transition: background-color .25s var(--ease), color .25s var(--ease), transform .2s var(--ease); }
+button.caja:hover { background: var(--ink); color: var(--sheet); } button.caja:active { transform: scale(.96); }
+.caja.llena { background: var(--cobalt); border-color: var(--cobalt); color: var(--sheet); }
+.caja.peligro { border-color: var(--rojo); color: var(--rojo); } button.caja.peligro:hover { background: var(--rojo); color: var(--sheet); }
+.caja:disabled, button.caja:disabled:hover { color: var(--muted); border-color: var(--muted); background: none; cursor: not-allowed; }
+
+.cima { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 0 28px; border-bottom: 1px solid var(--rule); }
+.cima .marca { text-align: center; min-width: 0; }
+.cima .marca b { display: block; font: 400 26px/1.1 var(--serif); letter-spacing: .01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cima .marca span { color: var(--muted); }
+.cima > :last-child { text-align: right; }
+
+.categorias { position: relative; display: flex; justify-content: center; gap: 8px; padding: 14px 16px 0; flex-wrap: wrap; min-height: 52px; }
+.categorias button { position: relative; z-index: 1; }
+.categorias button:hover { background: none; color: var(--cobalt); }
+.categorias button[aria-pressed="true"], .categorias button[aria-pressed="true"]:hover { color: var(--sheet); border-color: var(--cobalt); }
+.indicador { position: absolute; left: 0; top: 0; background: var(--cobalt); width: 10px; height: 10px; transform-origin: 0 0; }
+
+.estante { position: relative; display: grid; place-items: center; min-height: 0; outline-offset: -4px; touch-action: pan-y; }
+.escena { position: relative; width: 100%; height: calc(var(--H) * 1.3); perspective: 1500px; }
+.pista { position: absolute; inset: 0; transform-style: preserve-3d; }
+.tarjeta { position: absolute; left: 50%; top: 50%; width: var(--W); height: var(--H); margin: calc(var(--H) / -2) 0 0 calc(var(--W) / -2);
+  transform-style: preserve-3d; will-change: transform; user-select: none; -webkit-user-select: none; }
+/* Un solo color plano por tipo de billetera, sin degradados ni tramas. */
+.cara { position: absolute; inset: 0; border-radius: calc(var(--H) * .055); overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  background: var(--bg); color: var(--sheet); box-shadow: 0 calc(var(--H) * .06) calc(var(--H) * .12) rgba(20,20,20,.22); }
+.frente { padding: 10% 9% 9%; display: flex; flex-direction: column; gap: 7%; letter-spacing: .03em; font-size: max(11px, calc(var(--H) * .04)); }
+.frente header { display: flex; align-items: flex-start; justify-content: space-between; gap: .6em; font-weight: 600; font-size: 1.2em; line-height: 1.2; }
+.frente header span:first-child { overflow-wrap: anywhere; }
+.pastilla { font-size: .68em; border: 1px solid currentColor; padding: .15em .55em; border-radius: 99px; letter-spacing: .1em; white-space: nowrap; flex: none; }
+.frente small { display: block; font-size: .8em; letter-spacing: .1em; }
+.frente .saldo { font: 600 2.1em/1.15 var(--sans); letter-spacing: -.01em; }
+.frente .pie-tarjeta { margin-top: auto; display: flex; justify-content: space-between; font-size: .8em; letter-spacing: .1em; }
+.reverso { transform: rotateY(180deg); }
+.reverso .nombre { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(90deg); white-space: nowrap; font: 600 calc(var(--H) * .08)/1 var(--sans); letter-spacing: .04em; max-width: calc(var(--H) * .8); overflow: hidden; text-overflow: ellipsis; }
+.reverso .id { position: absolute; bottom: 6%; left: 0; right: 0; text-align: center; font-size: max(11px, calc(var(--H) * .032)); letter-spacing: .12em; }
+
+.flecha { position: absolute; top: 50%; width: 44px; height: 44px; margin-top: -22px; border: 1px solid var(--rule); background: var(--fondo-2); display: grid; place-items: center; z-index: 5;
+  transition: background-color .25s var(--ease), color .25s var(--ease), transform .25s var(--ease); }
+.flecha:hover { background: var(--ink); color: var(--sheet); } .flecha:active { transform: scale(.92); }
+.flecha.izq { left: 20px; } .flecha.der { right: 20px; }
+.ver { position: absolute; left: calc(50% + var(--W) * .78); top: calc(50% + var(--H) * .2); width: 116px; height: 116px; border-radius: 50%; background: var(--cobalt); color: var(--sheet);
+  display: grid; place-items: center; text-align: center; font-size: 11px; line-height: 1.4; z-index: 6; transition: transform .35s var(--ease); }
+.ver:hover { transform: scale(1.08); } .ver:active { transform: scale(.96); }
+.ver svg { display: block; margin: 0 auto 4px; }
+.vacio { text-align: center; max-width: 40ch; padding: 0 20px; }
+.vacio p { font: 400 26px/1.3 var(--serif); letter-spacing: 0; margin-bottom: 18px; }
+[hidden] { display: none !important; }
+
+.leyenda { text-align: center; padding: 0 16px 14px; }
+.mascara { position: relative; display: block; overflow: hidden; }
+.mascara > span { display: block; white-space: nowrap; }
+.mascara > span + span { position: absolute; inset: 0; }
+.leyenda .titulo { font: 400 clamp(34px, 6.4svh, 60px)/1.1 var(--serif); letter-spacing: 0; height: 1.1em; }
+.leyenda .meta { height: 1.5em; line-height: 1.5; } .leyenda .meta + .meta { color: var(--muted); }
+.pie { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 0 28px; border-top: 1px solid var(--rule); color: var(--muted); }
+
+.cursor { position: fixed; left: 0; top: 0; width: 58px; height: 58px; margin: -29px 0 0 -29px; border-radius: 50%; pointer-events: none; z-index: 99; display: none; will-change: transform; }
+.cursor i { position: absolute; inset: 0; border-radius: 50%; border: 1px solid var(--ink); display: grid; place-items: center; font: 600 11px/1.2 var(--sans); font-style: normal; color: transparent;
+  transition: transform .3s var(--ease), background-color .3s var(--ease), border-color .3s var(--ease), color .3s var(--ease); }
+.cursor.c-tarjeta i { transform: scale(.6); } .cursor.c-boton i { transform: scale(.34); }
+.cursor.c-activa i { background: var(--cobalt); border-color: var(--cobalt); color: var(--sheet); transform: scale(1.1); }
+@media (hover: hover) and (pointer: fine) { .cursor { display: block; } body, body * { cursor: none !important; } }
+
+.detalle { position: fixed; inset: 0; z-index: 50; background: var(--sheet); overflow: auto; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); }
+.detalle .izquierda { padding: 34px clamp(20px, 5vw, 72px) 60px; }
+.detalle .barra { display: flex; gap: 8px; align-items: center; margin-bottom: 30px; flex-wrap: wrap; }
+.detalle .barra span { margin-left: auto; color: var(--muted); }
+.detalle h2 { font: 400 clamp(40px, 6.4vw, 84px)/1.02 var(--serif); letter-spacing: -.01em; margin: 0 0 10px; overflow-wrap: anywhere; }
+.detalle .cat { color: var(--cobalt); }
+.detalle .saldo-grande { font: 400 44px/1.1 var(--serif); letter-spacing: 0; margin: 22px 0 4px; }
+.detalle dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 18px; padding: 14px 0; margin-top: 18px; border-top: 1px solid var(--rule); }
+.detalle dt { color: var(--muted); } .detalle dd { letter-spacing: .02em; font-size: 13px; }
+.detalle details { border-top: 1px solid var(--rule); }
+.detalle details:last-of-type { border-bottom: 1px solid var(--rule); }
+.detalle summary { list-style: none; display: flex; justify-content: space-between; padding: 14px 0; cursor: pointer; }
+.detalle summary::-webkit-details-marker { display: none; }
+.detalle summary::after { content: "+"; font-size: 16px; line-height: 1; transition: transform .35s var(--ease); }
+.detalle details[open] summary::after { transform: rotate(45deg); }
+.detalle .cuerpo { padding: 0 0 18px; display: grid; gap: 12px; justify-items: start; }
+.detalle .cuerpo p { font: 400 16px/1.45 var(--serif); letter-spacing: 0; max-width: 48ch; }
+.fila { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; width: 100%; }
+.fila .caja { min-height: 40px; }
+.campo { display: grid; gap: 5px; flex: 1 1 200px; color: var(--muted); width: 100%; max-width: 420px; }
+.campo input, .campo select { border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); padding: 9px 12px; min-height: 40px; letter-spacing: .02em; font-size: 14px; border-radius: 0; width: 100%; }
+#d-estado { min-height: 1.5em; margin-top: 14px; color: var(--rojo); }
+.detalle .derecha { position: relative; display: grid; place-items: center; padding: 30px 16px; background: var(--fondo-2); overflow: hidden; perspective: 1400px; min-height: 100%; }
+.detalle .formas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.telefono { position: relative; width: min(300px, 70vw); aspect-ratio: 9 / 19.2; border-radius: 44px; background: #101012; padding: 10px; margin: 0; box-shadow: 0 40px 70px rgba(20,20,20,.3); }
+.telefono::before { content: ""; position: absolute; top: 20px; left: 50%; width: 82px; height: 22px; margin-left: -41px; border-radius: 99px; background: #101012; z-index: 3; }
+.pantalla { position: relative; height: 100%; border-radius: 35px; overflow: hidden; background: var(--bg); color: var(--sheet); display: flex; flex-direction: column; letter-spacing: .01em; font-size: 12px; }
+.vistas { flex: 1; display: flex; width: 200%; min-height: 0; }
+.vistas section { width: 50%; padding: 58px 18px 12px; display: flex; flex-direction: column; gap: 14px; }
+.pantalla h3 { margin: 0; font: 600 14px/1.2 var(--sans); overflow-wrap: anywhere; }
+.pantalla .saldo { font: 600 30px/1.1 var(--sans); letter-spacing: -.02em; }
+.pantalla small { font-size: 11px; letter-spacing: .08em; display: block; }
+.movs { border-top: 1px solid rgba(244,242,237,.35); margin-top: auto; }
+.movs li { display: flex; justify-content: space-between; gap: 8px; padding: 9px 0; border-bottom: 1px solid rgba(244,242,237,.35); }
+.movs li span:last-child { font-weight: 600; white-space: nowrap; }
+.barra-app { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 8px 12px 14px; border-top: 1px solid rgba(244,242,237,.35); }
+.barra-app button { padding: 8px 0; border-radius: 12px; font-size: 11px; transition: background-color .25s var(--ease), color .25s var(--ease); }
+.barra-app button[aria-pressed="true"] { background: var(--sheet); color: var(--bg); }
+
+@media (max-width: 760px) {
+  body { grid-template-rows: 64px auto minmax(0, 1fr) auto 40px; }
+  .cima { padding: 0 14px; grid-template-columns: auto 1fr auto; } .cima .marca b { font-size: 18px; } .cima .marca span { display: none; }
+  .flecha.izq { left: 8px; } .flecha.der { right: 8px; }
+  .ver { left: auto; right: 12px; top: auto; bottom: 4px; width: 100px; height: 100px; }
+  .pie { padding: 0 14px; font-size: 11px; } .pie span:first-child { display: none; }
+  .detalle { grid-template-columns: minmax(0, 1fr); } .detalle .derecha { order: -1; min-height: 0; padding: 70px 16px 30px; } .telefono { width: min(240px, 62vw); }
+}
+</style>
+</head>
+<body>
+<header class="cima">
+  <div><button class="caja" id="volver" data-cur="boton">VOLVER</button></div>
+  <div class="marca"><b id="dueno">Billeteras</b><span>COLECCIÓN DE BILLETERAS</span></div>
+  <div><button class="caja llena" id="nueva" data-cur="boton">NUEVA BILLETERA</button></div>
+</header>
+
+<nav class="categorias" id="categorias" aria-label="Tipos de billetera"><span class="indicador" id="indicador" aria-hidden="true"></span></nav>
+
+<main class="estante" id="estante" tabindex="0" role="region" aria-roledescription="carrusel" aria-label="Billeteras del usuario. Flechas izquierda y derecha para cambiar, Enter para abrir.">
+  <div class="escena" id="escena"><div class="pista" id="pista" aria-hidden="true"></div></div>
+  <div class="vacio" id="vacio" hidden><p>Este usuario todavía no tiene billeteras.</p><button class="caja llena" id="primera" data-cur="boton">CREAR LA PRIMERA</button></div>
+  <button class="flecha izq" id="anterior" aria-label="Billetera anterior" data-cur="boton"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 2L4 8l6 6"/></svg></button>
+  <button class="flecha der" id="siguiente" aria-label="Billetera siguiente" data-cur="boton"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 2l6 6-6 6"/></svg></button>
+  <button class="ver" id="ver" data-cur="boton"><span><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 14L14 4M6 4h8v8"/></svg>VER<br>BILLETERA</span></button>
+</main>
+
+<div class="leyenda" aria-live="polite">
+  <h1 class="mascara titulo" id="l-nombre"><span></span></h1>
+  <p class="mascara meta" id="l-cat"><span></span></p>
+  <p class="mascara meta" id="l-col"><span></span></p>
+</div>
+
+<footer class="pie"><span>SAVINGCOL</span><span id="total"></span></footer>
+
+<div class="detalle" id="detalle" role="dialog" aria-modal="true" aria-labelledby="d-nombre" hidden>
+  <div class="izquierda">
+    <div class="barra">
+      <button class="caja" id="cerrar" data-cur="boton">CERRAR</button>
+      <button class="caja" id="d-ant" data-cur="boton" aria-label="Billetera anterior">←</button>
+      <button class="caja" id="d-sig" data-cur="boton" aria-label="Billetera siguiente">→</button>
+      <span id="d-id"></span>
+    </div>
+    <div id="d-texto"></div>
+    <p id="d-estado" role="status"></p>
+  </div>
+  <div class="derecha">
+    <svg class="formas" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <circle id="f-circulo" cx="300" cy="400" r="250" fill="none" stroke="#141414" stroke-width="1"/>
+      <g id="f-lineas" stroke="#1F3FB0" stroke-width="1"><path d="M0 400h600M300 0v800"/></g>
+      <rect id="f-cuadro" x="110" y="210" width="380" height="380" fill="none" stroke="#141414" stroke-width="1"/>
+    </svg>
+    <figure class="telefono" id="telefono"></figure>
+  </div>
+</div>
+
+<div class="cursor" id="cursor" aria-hidden="true"><i>VER</i></div>
+
+<script>
+'use strict';
+// Vitrina de las billeteras del usuario activo. Los datos y las acciones son los de la plataforma:
+// dentro de la consola los entrega la página anfitriona (parent.libreta); abierta sola, usa la API.
+const TIPOS = { AHORRO: ['Ahorro', '#1F5C43'], GASTOS_DIARIOS: ['Gastos diarios', '#1F3FB0'], COMPRAS: ['Compras', '#B4472B'], TRANSPORTE: ['Transporte', '#8A6A12'], INVERSION: ['Inversión', '#23303B'] };
+const INACTIVA = '#8C887F';
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const anfitrion = parent !== window ? parent.libreta : null;
+const $ = (s) => document.querySelector(s);
+const h = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const dinero = (n) => '$' + Number(n).toLocaleString('es-CO');
+const fecha = (iso) => new Date(iso).toLocaleString('es-CO', { day: 'numeric', month: 'short' });
+const color = (b) => (b.activa ? TIPOS[b.tipo][1] : INACTIVA);
+const anim = (el, cuadros, ms, extra = {}) => el.animate(cuadros, { duration: RM ? 1 : ms, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'both', ...extra });
+
+let U = null, L = [];           // usuario activo y sus billeteras
+let TODAS = [];                 // billeteras de todos los usuarios: destinos posibles
+let operacion = 'recargar';     // operación elegida en el detalle
+let tarjetas = [], flota = [], filtro = [];
+let meta = 0, pos = 0;          // posición deseada y suavizada dentro del estante
+let activa = -1, tipo = 'TODAS', sobre = -1, arrastre = null;
+let abierta = null;             // null | 'ver' | 'nueva'
+let vistaTel = 0, H = 300, W = 186, paso = 80, fuga = 0;
+const raton = { x: innerWidth / 2, y: innerHeight / 2 }, cur = { x: raton.x, y: raton.y };
+
+// ---------------------------------------------------------------- datos
+async function accion(nombre, datos) {
+  $('#d-estado').textContent = '';
+  if (anfitrion) return anfitrion.accion(nombre, datos); // la consola muestra el aviso y reenvía el estado
+  const r = await (await fetch('/api/accion/' + nombre, { method: 'POST', body: new URLSearchParams({ usuario: U.id, ...datos }) })).json();
+  if (!r.ok) $('#d-estado').textContent = r.error;
+  await cargarSola();
+  return r.ok;
+}
+async function cargarSola() {
+  const q = U ? '?usuario=' + encodeURIComponent(U.id) : '';
+  const estado = await (await fetch('/api/estado' + q)).json();
+  recibir(estado.activo, estado.billeteras);
+}
+
+// Llega el usuario activo (al abrir, al cambiar de usuario y después de cada acción).
+function recibir(usuario, todas) {
+  if (!usuario) return;
+  TODAS = todas ?? [];
+  const mismo = U?.id === usuario.id, elegida = L[activa]?.codigo, antes = L.length;
+  U = usuario; L = usuario.billeteras;
+  if (!L.some((b) => b.tipo === tipo)) tipo = 'TODAS';
+  construir();
+  let i = mismo ? L.findIndex((b) => b.codigo === elegida) : -1;
+  if (mismo && L.length > antes) i = L.length - 1;      // recién creada: queda al frente
+  if (i < 0) i = Math.floor((L.length - 1) / 2);
+  meta = Math.max(0, i);
+  if (!mismo) pos = meta;
+  activa = -1;
+  elegir(meta);
+  if (abierta === 'ver') { if (mismo && L.some((b) => b.codigo === elegida)) pintarDetalle(); else cerrar(true); }
+  else if (abierta && !mismo) cerrar(true);
+}
+
+function construir() {
+  $('#dueno').textContent = U.nombre;
+  $('#total').textContent = `${L.length} ${L.length === 1 ? 'BILLETERA' : 'BILLETERAS'} · SALDO TOTAL ${dinero(U.saldoTotal)}`;
+  $('#pista').innerHTML = L.map((b, k) => `<div class="tarjeta" data-k="${k}" data-cur="tarjeta" style="--bg:${color(b)}">
+    <div class="cara frente"><header><span>${h(b.nombre)}</span><span class="pastilla">${b.activa ? 'ACTIVA' : 'INACTIVA'}</span></header>
+      <div><small>SALDO DISPONIBLE</small><div class="saldo">${dinero(b.saldo)}</div></div>
+      <div class="pie-tarjeta"><span>${h(TIPOS[b.tipo][0]).toUpperCase()}</span><span>${h(b.codigo)}</span></div></div>
+    <div class="cara reverso"><span class="nombre">${h(b.nombre).toUpperCase()}</span><span class="id">${h(b.codigo)}</span></div></div>`).join('');
+  tarjetas = [...$('#pista').children];
+  flota = tarjetas.map(() => 0); filtro = tarjetas.map(() => 1);
+  const hay = L.length > 0;
+  for (const id of ['anterior', 'siguiente', 'ver']) $('#' + id).hidden = !hay || (id !== 'ver' && L.length < 2);
+  $('#vacio').hidden = hay; $('#escena').hidden = !hay;
+  const presentes = Object.keys(TIPOS).filter((t) => L.some((b) => b.tipo === t));
+  $('#categorias').innerHTML = '<span class="indicador" id="indicador" aria-hidden="true"></span>' + (presentes.length > 1
+    ? [['TODAS', 'TODAS'], ...presentes.map((t) => [t, TIPOS[t][0].toUpperCase()])].map(([id, texto]) => `<button class="caja" data-tipo="${id}" data-cur="boton" aria-pressed="${id === tipo}">${texto}</button>`).join('') : '');
+  medir(); indicar(false);
+}
+
+// ---------------------------------------------------------------- estante
+function medir() { if (!tarjetas[0]) return; H = tarjetas[0].offsetHeight; W = tarjetas[0].offsetWidth; paso = W * .44; }
+const coincide = (b) => tipo === 'TODAS' || b.tipo === tipo;
+
+function cuadro() {
+  pos += (meta - pos) * (RM ? 1 : .11);
+  cur.x += (raton.x - cur.x) * (RM ? 1 : .2); cur.y += (raton.y - cur.y) * (RM ? 1 : .2);
+  $('#cursor').style.transform = `translate3d(${cur.x}px,${cur.y}px,0)`;
+  fuga += ((raton.x / innerWidth - .5) - fuga) * .05;
+  $('#escena').style.perspectiveOrigin = `${50 + fuga * 14}% 50%`;
+  for (let k = 0; k < tarjetas.length; k++) {
+    const d = k - pos, ad = Math.abs(d), a = Math.max(0, 1 - ad), e = a * a * (3 - 2 * a);
+    flota[k] += ((sobre === k ? 1 : 0) - flota[k]) * (RM ? 1 : .16);
+    filtro[k] += ((coincide(L[k]) ? 1 : 0) - filtro[k]) * (RM ? 1 : .12);
+    const x = d * paso + Math.sign(d) * Math.min(ad, 1) * W * .56;
+    const y = -e * H * .05 - flota[k] * (1 - e) * H * .05;
+    // En reposo cada tarjeta muestra el reverso girado hacia el centro; la activa gira hasta mostrar el frente.
+    tarjetas[k].style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,${(e * H * .55).toFixed(1)}px) rotateY(${((d < 0 ? -108 : 108) * (1 - e) + 12 * e).toFixed(2)}deg) rotateX(${(e * 3).toFixed(2)}deg) rotateZ(${(-e * 1.6).toFixed(2)}deg) scale(${((.72 + .28 * filtro[k]) * (1 + e * .1)).toFixed(3)})`;
+  }
+  requestAnimationFrame(cuadro);
+}
+
+function elegir(n) {
+  if (!L.length) { for (const id of ['l-nombre', 'l-cat', 'l-col']) cambiar($('#' + id), '', true); activa = -1; return; }
+  meta = Math.min(L.length - 1, Math.max(0, Math.round(n)));
+  if (meta === activa) return;
+  const sube = meta >= activa;
+  activa = meta;
+  const b = L[activa];
+  cambiar($('#l-nombre'), b.nombre.toUpperCase(), sube);
+  cambiar($('#l-cat'), `${TIPOS[b.tipo][0].toUpperCase()} / ${b.codigo} / ${b.activa ? 'ACTIVA' : 'INACTIVA'}`, sube);
+  cambiar($('#l-col'), `${dinero(b.saldo)} — ${String(activa + 1).padStart(2, '0')}/${String(L.length).padStart(2, '0')}`, sube);
+  if (abierta === 'ver') pintarDetalle(sube);
+}
+// Con las flechas, pasar del último vuelve al primero.
+const mover = (delta) => { if (L.length) elegir((Math.round(meta) + delta + L.length) % L.length); };
+
+// Cambia una línea de la leyenda: la anterior sale de su máscara y la nueva entra.
+function cambiar(mascara, texto, sube) {
+  const viejo = mascara.lastElementChild;
+  if (viejo.textContent === texto) return;
+  const nuevo = document.createElement('span');
+  nuevo.textContent = texto;
+  mascara.append(nuevo);
+  const dir = sube ? 1 : -1;
+  anim(viejo, [{ transform: 'translateY(0)' }, { transform: `translateY(${-110 * dir}%)` }], 620);
+  anim(nuevo, [{ transform: `translateY(${110 * dir}%)` }, { transform: 'translateY(0)' }], 620).finished.then(() => { if (viejo.isConnected) viejo.remove(); });
+}
+
+function indicar(animar) {
+  const b = $('#categorias [aria-pressed="true"]'), ind = $('#indicador');
+  ind.hidden = !b;
+  if (!b) return;
+  const t = `translate(${b.offsetLeft}px,${b.offsetTop}px) scale(${b.offsetWidth / 10},${b.offsetHeight / 10})`;
+  anim(ind, [{ transform: animar ? getComputedStyle(ind).transform : t }, { transform: t }], animar ? 520 : 1);
+}
+$('#categorias').addEventListener('click', (ev) => {
+  const b = ev.target.closest('[data-tipo]');
+  if (!b) return;
+  tipo = b.dataset.tipo;
+  $('#categorias').querySelectorAll('[data-tipo]').forEach((x) => x.setAttribute('aria-pressed', x === b));
+  indicar(true);
+  if (!coincide(L[activa])) { // salta a la billetera más cercana de ese tipo
+    elegir(L.map((x, k) => k).filter((k) => coincide(L[k])).sort((a, c) => Math.abs(a - activa) - Math.abs(c - activa))[0]);
+  }
+});
+addEventListener('resize', () => { medir(); indicar(false); });
+
+// ---------------------------------------------------------------- entradas
+const estante = $('#estante');
+$('#anterior').onclick = () => mover(-1);
+$('#siguiente').onclick = () => mover(1);
+$('#ver').onclick = () => abrir('ver');
+$('#nueva').onclick = $('#primera').onclick = () => abrir('nueva');
+$('#volver').onclick = () => { if (anfitrion) parent.location.hash = 'resumen'; else history.back(); };
+
+estante.addEventListener('pointerdown', (ev) => {
+  if (ev.target.closest('button') || ev.button || !L.length) return;
+  arrastre = { x: ev.clientX, meta, movido: false, k: ev.target.closest('.tarjeta')?.dataset.k };
+  estante.setPointerCapture(ev.pointerId);
+});
+estante.addEventListener('pointermove', (ev) => {
+  if (!arrastre) return;
+  const dx = ev.clientX - arrastre.x;
+  if (Math.abs(dx) > 6) arrastre.movido = true;
+  if (arrastre.movido) meta = Math.min(L.length - .6, Math.max(-.4, arrastre.meta - dx / paso));
+});
+const soltar = () => {
+  if (!arrastre) return;
+  const a = arrastre; arrastre = null;
+  if (a.movido) return elegir(meta);
+  if (a.k === undefined) return;
+  if (+a.k === activa) abrir('ver'); else elegir(+a.k);
+};
+estante.addEventListener('pointerup', soltar);
+estante.addEventListener('pointercancel', () => { if (arrastre) { arrastre = null; elegir(meta); } });
+
+let rueda;
+estante.addEventListener('wheel', (ev) => {
+  // Solo el desplazamiento horizontal mueve el estante: el vertical sigue siendo de la página.
+  const dx = ev.shiftKey ? ev.deltaY : ev.deltaX;
+  if (!dx || !L.length || (!ev.shiftKey && Math.abs(ev.deltaX) <= Math.abs(ev.deltaY))) return;
+  ev.preventDefault();
+  meta = Math.min(L.length - .6, Math.max(-.4, meta + dx / (paso * 3)));
+  clearTimeout(rueda);
+  rueda = setTimeout(() => elegir(meta), 140);
+}, { passive: false });
+
+addEventListener('keydown', (ev) => {
+  if (ev.key === 'Escape' && abierta) return cerrar();
+  if (ev.target.closest?.('button, summary, input, select')) return;
+  if (ev.key === 'ArrowLeft') mover(-1);
+  else if (ev.key === 'ArrowRight') mover(1);
+  else if (ev.key === 'Enter' && !abierta) abrir('ver');
+});
+
+addEventListener('pointermove', (ev) => { raton.x = ev.clientX; raton.y = ev.clientY; });
+addEventListener('pointerover', (ev) => {
+  const t = ev.target.closest?.('[data-cur], summary, input, select');
+  const tarjeta = ev.target.closest?.('.tarjeta');
+  sobre = tarjeta ? +tarjeta.dataset.k : -1;
+  $('#cursor').className = 'cursor' + (tarjeta && sobre === activa ? ' c-activa' : tarjeta ? ' c-tarjeta' : t ? ' c-boton' : '');
+});
+
+// ---------------------------------------------------------------- detalle
+const detalle = $('#detalle');
+const linea = (html) => `<span class="mascara"><span>${html}</span></span>`;
+const seccion = (titulo, cuerpo, abierto) => `<details${abierto ? ' open' : ''}><summary data-cur="boton">${titulo}</summary><div class="cuerpo">${cuerpo}</div></details>`;
+const opcionesTipo = Object.entries(TIPOS).map(([id, [nombre]]) => `<option value="${id}">${nombre}</option>`).join('');
+
+// Recargar, retirar o transferir desde la billetera abierta. Las reglas (saldo, límite, comisión) las aplica el servidor.
+function formOperar(b) {
+  if (!b.activa) return '<p>Esta billetera está inactiva. Actívala para recargar, retirar o transferir.</p>';
+  const grupos = new Map();
+  for (const x of TODAS) {
+    if (!x.activa || x.codigo === b.codigo) continue;
+    const g = x.propietarioId === U.id ? 'Mis billeteras' : x.propietario;
+    grupos.set(g, [...(grupos.get(g) ?? []), x]);
+  }
+  const destinos = [...grupos].sort(([a], [c]) => (a === 'Mis billeteras' ? -1 : c === 'Mis billeteras' ? 1 : 0))
+    .map(([g, xs]) => `<optgroup label="${h(g)}">${xs.map((x) => `<option value="${h(x.codigo)}">${h(x.nombre)} (${h(x.codigo)})</option>`).join('')}</optgroup>`).join('');
+  const opciones = [['recargar', 'Recargar'], ['retirar', 'Retirar'], ['transferir', 'Transferir']]
+    .map(([id, t]) => `<option value="${id}"${id === operacion ? ' selected' : ''}>${t}</option>`).join('');
+  return `<form class="fila" data-operar>
+      <label class="campo" style="flex-basis:150px"><span>OPERACIÓN</span><select name="operacion">${opciones}</select></label>
+      <label class="campo" id="campo-destino" style="flex-basis:220px"${operacion === 'transferir' ? '' : ' hidden'}><span>HACIA</span><select name="destino">${destinos}</select></label>
+      <label class="campo" style="flex-basis:120px"><span>VALOR</span><input name="valor" inputmode="numeric" pattern="[0-9]+" required placeholder="0" autocomplete="off"></label>
+      <button class="caja llena" data-cur="boton">APLICAR</button></form>
+    <p>Nivel ${h(U.nivel)}: hasta ${dinero(U.nivelDetalle.limite)} por operación. Al enviar a otro usuario se cobra ${(U.nivelDetalle.comisionPuntosBasicos / 100).toLocaleString('es-CO')} % de comisión.</p>`;
+}
+
+function pintarDetalle(sube = true) {
+  const tel = $('#telefono'), nueva = abierta === 'nueva', b = nueva ? null : L[activa];
+  for (const id of ['d-ant', 'd-sig']) $('#' + id).hidden = nueva || L.length < 2;
+  if (nueva) {
+    detalle.style.setProperty('--bg', TIPOS.AHORRO[1]);
+    $('#d-id').textContent = U.nombre.toUpperCase();
+    $('#d-texto').innerHTML = `<h2 id="d-nombre">${linea('Nueva billetera')}</h2><p class="cat">${linea('SEPARA DINERO PARA UN PROPÓSITO')}</p>
+      <form class="cuerpo" data-accion="billetera.crear" style="margin-top:26px">
+        <label class="campo"><span>NOMBRE</span><input name="nombre" required maxlength="40" placeholder="Ej.: Vacaciones" autocomplete="off"></label>
+        <label class="campo"><span>TIPO</span><select name="tipo">${opcionesTipo}</select></label>
+        <button class="caja llena" data-cur="boton">CREAR BILLETERA</button></form>`;
+    tel.setAttribute('aria-label', 'Vista previa del teléfono con la billetera nueva, en el color de su tipo y con saldo cero.');
+    tel.innerHTML = `<div class="pantalla"><div class="vistas"><section><h3 id="previa-nombre">Nueva billetera</h3><div><small>SALDO DISPONIBLE</small><div class="saldo">$0</div><small id="previa-tipo">AHORRO</small></div></section></div></div>`;
+  } else {
+    const movs = U.historial.filter((t) => t.estado !== 'RECHAZADA' && (t.origen === b.codigo || t.destino === b.codigo)).slice(0, 4);
+    detalle.style.setProperty('--bg', color(b));
+    $('#d-id').textContent = `${b.codigo} · ${String(activa + 1).padStart(2, '0')}/${String(L.length).padStart(2, '0')}`;
+    $('#d-texto').innerHTML = `<h2 id="d-nombre">${linea(h(b.nombre))}</h2>
+      <p class="cat">${linea(`${TIPOS[b.tipo][0].toUpperCase()} / ${b.activa ? 'ACTIVA' : 'INACTIVA'}`)}</p>
+      <p class="saldo-grande">${linea(dinero(b.saldo))}</p><p>${linea('SALDO DISPONIBLE')}</p>
+      <dl><dt>${linea('CÓDIGO')}</dt><dd>${linea(h(b.codigo))}</dd><dt>${linea('MOVIMIENTOS')}</dt><dd>${linea(b.movimientos)}</dd><dt>${linea('PROPIETARIO')}</dt><dd>${linea(h(U.nombre))}</dd></dl>
+      ${seccion('RECARGAR, RETIRAR O TRANSFERIR', formOperar(b), true)}
+      ${seccion('RENOMBRAR', `<form class="fila" data-accion="billetera.renombrar"><input type="hidden" name="codigo" value="${h(b.codigo)}">
+        <label class="campo"><span>NUEVO NOMBRE</span><input name="nombre" required maxlength="40" value="${h(b.nombre)}" autocomplete="off"></label><button class="caja" data-cur="boton">GUARDAR</button></form>`)}
+      ${seccion(b.activa ? 'DESACTIVAR' : 'ACTIVAR', `<p>${b.activa ? 'Una billetera inactiva conserva su saldo, pero no recibe ni envía dinero.' : 'Al activarla vuelve a recibir y enviar dinero.'}</p>
+        <button class="caja" data-cur="boton" data-accion="billetera.estado" data-activa="${!b.activa}">${b.activa ? 'DESACTIVAR BILLETERA' : 'ACTIVAR BILLETERA'}</button>`)}
+      ${seccion('ELIMINAR', `<p>${b.saldo > 0 ? `Solo se puede eliminar con saldo cero. Retira o transfiere ${dinero(b.saldo)} primero.` : 'Se borra la billetera y sus operaciones programadas. No se puede deshacer.'}</p>
+        <button class="caja peligro" data-cur="boton" data-accion="billetera.eliminar"${b.saldo > 0 ? ' disabled' : ''}>ELIMINAR BILLETERA</button>`)}`;
+    tel.setAttribute('aria-label', `Maqueta de teléfono con la billetera ${b.nombre}: saldo de ${dinero(b.saldo)}, sus ${movs.length} movimientos más recientes y una barra con las vistas Inicio y Datos.`);
+    tel.innerHTML = `<div class="pantalla"><div class="vistas" id="vistas">
+        <section><h3>${h(b.nombre)}</h3><div><small>SALDO DISPONIBLE</small><div class="saldo">${dinero(b.saldo)}</div><small>${TIPOS[b.tipo][0].toUpperCase()} · ${b.activa ? 'ACTIVA' : 'INACTIVA'}</small></div>
+          <ul class="movs">${movs.map((t) => `<li><span>${h(t.tipoEtiqueta)} · ${fecha(t.fecha)}</span><span>${t.destino === b.codigo ? '+' + dinero(t.valor) : '−' + dinero(t.valor + t.comision)}</span></li>`).join('') || '<li><span>Sin movimientos todavía</span><span></span></li>'}</ul></section>
+        <section><h3>Datos</h3><ul class="movs" style="margin-top:0"><li><span>Código</span><span>${h(b.codigo)}</span></li><li><span>Tipo</span><span>${TIPOS[b.tipo][0]}</span></li><li><span>Estado</span><span>${b.activa ? 'Activa' : 'Inactiva'}</span></li><li><span>Movimientos</span><span>${b.movimientos}</span></li></ul></section>
+      </div><div class="barra-app">${['Inicio', 'Datos'].map((v, i) => `<button data-vista="${i}" data-cur="boton" aria-pressed="${i === vistaTel}">${v}</button>`).join('')}</div></div>`;
+    $('#vistas').style.transform = `translateX(${-vistaTel * 50}%)`;
+  }
+  // Entradas sin opacidad: el texto sube por su máscara y el teléfono llega girando en perspectiva.
+  detalle.querySelectorAll('#d-texto .mascara > span').forEach((s, i) => anim(s, [{ transform: `translateY(${sube ? 110 : -110}%)` }, { transform: 'translateY(0)' }], 760, { delay: RM ? 0 : 90 + i * 40 }));
+  detalle.querySelectorAll('#d-texto details, #d-texto > form').forEach((d, i) => anim(d, [{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }], 820, { delay: RM ? 0 : 320 + i * 70 }));
+  anim(tel, [{ transform: `translateY(14%) rotateY(${sube ? -38 : 38}deg) rotateX(10deg) scale(.72)` }, { transform: 'none' }], 1100, { delay: RM ? 0 : 120 });
+  for (const [id, cuadros, ms] of [['f-circulo', [{ transform: 'scale(.2)' }, { transform: 'scale(1)' }], 1300], ['f-cuadro', [{ transform: 'rotate(-45deg) scale(.4)' }, { transform: 'rotate(8deg) scale(1)' }], 1500]]) {
+    $('#' + id).style.transformOrigin = '300px 400px';
+    anim($('#' + id), cuadros, ms);
+  }
+  anim($('#f-lineas'), [{ clipPath: 'inset(0 100% 100% 0)' }, { clipPath: 'inset(0 0 0 0)' }], 1200);
+}
+
+// Rectángulo desde el que se despliega la hoja: la tarjeta activa, o el botón que la abrió.
+function recorte(el) {
+  const r = (el ?? tarjetas[activa] ?? $('#nueva')).getBoundingClientRect();
+  return `inset(${r.top}px ${innerWidth - r.right}px ${innerHeight - r.bottom}px ${r.left}px round 18px)`;
+}
+function abrir(modo) {
+  if (abierta || !U || (modo === 'ver' && !L.length)) return;
+  abierta = modo; vistaTel = 0;
+  const desde = recorte(modo === 'nueva' ? $('#nueva') : null);
+  detalle.hidden = false; detalle.scrollTop = 0; $('#d-estado').textContent = '';
+  pintarDetalle();
+  detalle.animate([{ clipPath: desde }, { clipPath: 'inset(0px 0px 0px 0px round 0px)' }], { duration: RM ? 1 : 1050, easing: 'cubic-bezier(.76,0,.18,1)', fill: 'both' });
+  for (const el of [$('.cima'), $('#categorias'), estante]) el.inert = true; // el foco queda dentro del diálogo
+  (modo === 'nueva' ? detalle.querySelector('[name=nombre]') : $('#cerrar')).focus();
+}
+function cerrar(yaNoExiste) {
+  if (!abierta) return;
+  const hacia = recorte(abierta === 'nueva' || yaNoExiste === true ? $('#nueva') : null);
+  abierta = null;
+  detalle.animate([{ clipPath: 'inset(0px 0px 0px 0px round 0px)' }, { clipPath: hacia }], { duration: RM ? 1 : 760, easing: 'cubic-bezier(.76,0,.18,1)', fill: 'both' })
+    .finished.then(() => { if (!abierta) detalle.hidden = true; });
+  for (const el of [$('.cima'), $('#categorias'), estante]) el.inert = false;
+  estante.focus();
+}
+$('#cerrar').onclick = () => cerrar();
+$('#d-ant').onclick = () => mover(-1);
+$('#d-sig').onclick = () => mover(1);
+
+detalle.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const f = ev.target, crear = f.dataset.accion === 'billetera.crear';
+  if ('operar' in f.dataset) { // la billetera abierta es el origen, salvo en la recarga, donde es el destino
+    const codigo = L[activa].codigo, valor = f.valor.value;
+    const datos = operacion === 'recargar' ? { destino: codigo, valor } : operacion === 'retirar' ? { origen: codigo, valor } : { origen: codigo, destino: f.destino.value, valor };
+    return accion('operar.' + operacion, datos);
+  }
+  const ok = await accion(f.dataset.accion, Object.fromEntries(new FormData(f)));
+  if (ok && crear) cerrar();
+});
+detalle.addEventListener('click', async (ev) => {
+  const b = ev.target.closest('button');
+  if (!b) return;
+  if (b.dataset.vista) {
+    const antes = vistaTel; vistaTel = +b.dataset.vista;
+    detalle.querySelectorAll('[data-vista]').forEach((x) => x.setAttribute('aria-pressed', x === b));
+    return anim($('#vistas'), [{ transform: `translateX(${-antes * 50}%)` }, { transform: `translateX(${-vistaTel * 50}%)` }], 620);
+  }
+  if (!b.dataset.accion || b.form) return;
+  if (b.dataset.accion === 'billetera.eliminar' && !b.dataset.seguro) { // segundo clic para confirmar
+    b.dataset.seguro = '1'; b.textContent = '¿SEGURO? ELIMINAR';
+    return;
+  }
+  const datos = { codigo: L[activa].codigo };
+  if (b.dataset.activa) datos.activa = b.dataset.activa;
+  await accion(b.dataset.accion, datos);
+});
+detalle.addEventListener('input', (ev) => { // la vista previa sigue lo que se escribe
+  if (ev.target.name === 'operacion') { operacion = ev.target.value; $('#campo-destino').hidden = operacion !== 'transferir'; }
+  if (abierta !== 'nueva') return;
+  if (ev.target.name === 'nombre') $('#previa-nombre').textContent = ev.target.value || 'Nueva billetera';
+  if (ev.target.name === 'tipo') { detalle.style.setProperty('--bg', TIPOS[ev.target.value][1]); $('#previa-tipo').textContent = TIPOS[ev.target.value][0].toUpperCase(); }
+});
+
+window.recibir = recibir;
+if (anfitrion) { const estado = anfitrion.datos(); recibir(estado.activo, estado.billeteras); } else cargarSola();
+document.fonts?.ready.then(() => { medir(); indicar(false); });
+requestAnimationFrame(cuadro);
+</script>
+</body>
+</html>

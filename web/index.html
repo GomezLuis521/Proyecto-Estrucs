@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SavingCol · Billeteras digitales</title>
+  <meta name="description" content="Consola de la plataforma de billeteras digitales: proyecto final de Estructuras de Datos.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600&family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+
+  <aside class="riel">
+    <a class="marca" href="#resumen" aria-label="SavingCol, ir al resumen">
+      <span class="marca-icono" aria-hidden="true"></span>
+      <span>SavingCol</span>
+    </a>
+    <nav aria-label="Vistas" id="nav"></nav>
+  </aside>
+
+  <div class="cuerpo">
+    <header class="barra">
+      <label class="campo campo--linea" for="usuario-activo">
+        <span>Usuario activo</span>
+        <select id="usuario-activo"></select>
+      </label>
+      <div class="reloj" role="group" aria-label="Reloj simulado de la plataforma">
+        <span class="reloj-hora"><span class="reloj-rotulo">Reloj simulado</span><time id="reloj">—</time></span>
+        <button class="btn btn--suave" data-accion="reloj.avanzar" data-horas="1">+1 h</button>
+        <button class="btn btn--suave" data-accion="reloj.avanzar" data-horas="24">+1 día</button>
+        <button class="btn btn--suave" data-accion="reloj.avanzar" data-horas="168">+7 días</button>
+      </div>
+      <button class="btn btn--texto" data-accion="demo.reiniciar" data-confirmar="Se borrarán los cambios y volverán los datos de ejemplo. ¿Continuar?">Restaurar datos</button>
+    </header>
+
+    <main id="contenido" tabindex="-1">
+      <p class="cargando">Cargando la plataforma…</p>
+    </main>
+  </div>
+
+  <div id="aviso" class="aviso" role="status" aria-live="polite" hidden></div>
+  <script src="app.js"></script>
+</body>
+</html>
