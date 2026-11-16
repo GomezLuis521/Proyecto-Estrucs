@@ -2,7 +2,7 @@ package billeteras.api;
 
 import java.util.Map;
 
-/** Escritor JSON mínimo: mapas, iterables, números, booleanos, enums y texto. Evita depender de librerías. */
+
 final class Json {
 
     private Json() { }
@@ -41,7 +41,7 @@ final class Json {
         } else if (valor instanceof Enum<?> e) {
             texto(sb, e.name());
         } else {
-            texto(sb, valor.toString()); // String y LocalDateTime (formato ISO)
+            texto(sb, valor.toString()); 
         }
     }
 
