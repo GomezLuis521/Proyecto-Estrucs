@@ -11,10 +11,7 @@ import billeteras.modelo.Usuario;
 import java.time.LocalDateTime;
 
 /**
- * Detección de comportamiento financiero inusual.
- * Compara cada salida de dinero (retiro o transferencia) con el historial del usuario
- * en una sola pasada por su lista de movimientos: O(n).
- */
+ * Detección de comportamiento financiero inusual. Compara cada salida de dinero (retiro o transferencia) con el historial del usuario*/
 public class DetectorInusual {
 
     public record Hallazgo(String regla, Riesgo riesgo, String detalle) { }
@@ -40,7 +37,7 @@ public class DetectorInusual {
             if (!x.fecha().isBefore(cuando.minusHours(24))) ultimas24h++;
             else if (!x.fecha().isBefore(cuando.minusDays(8))) semanaPrevia++;
 
-            if (x == t) continue; // lo que sigue es la línea base: solo cuenta lo anterior
+            if (x == t) continue;
             previas++;
             if (x.fecha().getHour() < 5) previasDeMadrugada++;
             if (x.tipo() != TipoTransaccion.RECARGA) { salidasPrevias++; sumaSalidasPrevias += x.valor(); }

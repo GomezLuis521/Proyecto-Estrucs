@@ -4,7 +4,7 @@ import billeteras.modelo.Beneficio;
 import billeteras.modelo.Nivel;
 import billeteras.modelo.TipoTransaccion;
 
-/** Política de puntos de fidelización y catálogo de beneficios canjeables. */
+/** puntos de fidelización y catálogo de beneficios canjeables. */
 public final class Recompensas {
 
     public static final String BONO_50 = "BONO-50";
@@ -22,10 +22,7 @@ public final class Recompensas {
 
     private Recompensas() { }
 
-    /**
-     * Recarga 1, retiro 2 y transferencia 3 puntos por cada 100 unidades,
-     * multiplicados por el bono de puntos del nivel del usuario.
-     */
+    /**Recarga 1, retiro 2 y transferencia 3 puntos por cada 100 unidades, multiplicados por el bono de puntos del nivel del usuario.*/
     public static long puntos(TipoTransaccion tipo, long valor, Nivel nivel) {
         return (valor / 100) * tipo.puntosPorCien() * nivel.bonoPuntosPorcentaje() / 100;
     }

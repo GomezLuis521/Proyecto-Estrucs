@@ -20,10 +20,7 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Convierte el estado de la plataforma en mapas listos para serializar a JSON.
- * Es la única capa que usa colecciones de java.util: solo como formato de salida.
- */
+/*Convierte el estado de la plataforma en mapas listos para serializar a JSON.*/
 final class Vistas {
 
     private final Plataforma p;

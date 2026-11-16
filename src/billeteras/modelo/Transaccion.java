@@ -9,15 +9,15 @@ public class Transaccion {
     private final TipoTransaccion tipo;
     private final long valor;
     private final String usuarioId;
-    private final String origen;      // código de billetera, o null en una recarga
-    private final String destino;     // código de billetera, o null en un retiro
+    private final String origen;
+    private final String destino;
     private final boolean programada;
-    private final String referencia;  // transacción revertida u operación programada que la originó
+    private final String referencia;
     private EstadoTransaccion estado = EstadoTransaccion.EXITOSA;
     private Riesgo riesgo = Riesgo.NINGUNO;
     private long puntos;
     private long comision;
-    private long saldoOrigen = -1;    // saldo de cada billetera justo después del movimiento
+    private long saldoOrigen = -1;
     private long saldoDestino = -1;
     private String motivo;
 

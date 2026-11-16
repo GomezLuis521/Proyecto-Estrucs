@@ -9,11 +9,7 @@ import billeteras.modelo.Usuario;
 import java.time.LocalDateTime;
 import java.util.Random;
 
-/**
- * Datos de ejemplo para la sustentación: ocho usuarios ficticios y un mes de movimientos
- * simulados, con casos preparados de reversión, canje y comportamiento inusual.
- * Usa las mismas operaciones públicas de la plataforma, así que todo pasa por las validaciones.
- */
+/** Datos de ejemplo.*/
 public final class DatosDemo {
 
     private static final String[][] PERSONAS = {
@@ -36,7 +32,6 @@ public final class DatosDemo {
         {{"Diario", TipoBilletera.GASTOS_DIARIOS}, {"Compras", TipoBilletera.COMPRAS}, {"Ahorro", TipoBilletera.AHORRO}},
     };
 
-    /** Probabilidad de operar en cada hora del día y monto máximo, por usuario: define qué nivel alcanza. */
     private static final double[] ACTIVIDAD = {0.36, 0.17, 0.10, 0.14, 0.06, 0.12, 0.09};
     private static final int[] MONTO_MAXIMO = {4900, 2500, 1500, 2000, 1200, 1800, 1500};
 
@@ -53,7 +48,7 @@ public final class DatosDemo {
             for (Object[] b : BILLETERAS[i]) p.crearBilletera(d[0], (String) b[0], (TipoBilletera) b[1]);
         }
 
-        // Un mes de actividad normal, de 7:00 a 21:00, hasta dos días antes del cierre.
+
         LocalDateTime corte = fin.minusDays(2);
         for (LocalDateTime hora = inicio.plusHours(1); hora.isBefore(corte); hora = hora.plusHours(1)) {
             if (hora.getHour() < 7 || hora.getHour() > 21) continue;

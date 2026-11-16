@@ -6,7 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 
-/** Punto de entrada: carga los datos de ejemplo y levanta la consola web. Uso: Main [puerto]. */
+/**  carga los datos de ejemplo y levanta la consola web. */
 public class Main {
 
     public static void main(String[] args) throws Exception {

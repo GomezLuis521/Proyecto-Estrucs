@@ -19,6 +19,6 @@ public enum TipoTransaccion {
     public String etiqueta() { return etiqueta; }
     public int puntosPorCien() { return puntosPorCien; }
 
-    /** Solo recargas, retiros y transferencias se pueden deshacer. */
+
     public boolean reversible() { return puntosPorCien > 0; }
 }

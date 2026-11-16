@@ -24,10 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 
-/**
- * Servidor HTTP del JDK: sirve la página web y expone la plataforma como API.
- * GET /api/estado devuelve todo lo que la interfaz muestra; POST /api/accion/{nombre} ejecuta una operación.
- */
+/** Servidor HTTP  sirve la página web y expone la plataforma como API.*/
 public class ServidorApi {
 
     private final HttpServer servidor;
@@ -37,7 +34,6 @@ public class ServidorApi {
     public ServidorApi(int puerto, Path carpetaWeb, Plataforma plataforma) throws IOException {
         this.carpetaWeb = carpetaWeb.toAbsolutePath().normalize();
         this.plataforma = plataforma;
-        // Solo escucha en esta máquina: es una demostración local, no un servicio público.
         servidor = HttpServer.create(new InetSocketAddress("127.0.0.1", puerto), 0);
         servidor.createContext("/api/estado", x -> responder(x, () -> Json.de(estado(parametros(x.getRequestURI().getRawQuery())))));
         servidor.createContext("/api/rendimiento", x -> responder(x, () -> Json.de(rendimiento(parametros(x.getRequestURI().getRawQuery())))));
@@ -54,7 +50,7 @@ public class ServidorApi {
 
     private interface Respuesta { String producir() throws IOException; }
 
-    /** Un solo candado: la plataforma no es concurrente y las peticiones se atienden de una en una. */
+
     private synchronized void responder(HttpExchange x, Respuesta respuesta) throws IOException {
         int codigo = 200;
         String json;
@@ -156,7 +152,7 @@ public class ServidorApi {
             + t.puntos() + " puntos" + (t.comision() > 0 ? "; comisión " + Plataforma.dinero(t.comision()) + "." : ".");
     }
 
-    // ------------------------------------------------------------ entrada y salida
+
 
     private static long valor(TablaHash<String, String> f) {
         Long v = entero(f, "valor");
@@ -182,7 +178,7 @@ public class ServidorApi {
         }
     }
 
-    /** Fecha de un filtro (AAAA-MM-DD): inicio o fin de ese día. Vacía usa el valor por defecto. */
+
     private static LocalDateTime fechaDia(String texto, LocalDateTime porDefecto, boolean finDelDia) {
         if (texto == null || texto.isBlank()) return porDefecto;
         try {
@@ -201,7 +197,7 @@ public class ServidorApi {
         }
     }
 
-    /** Lee pares clave=valor codificados como formulario (cuerpo de un POST o consulta de una URL). */
+
     private static TablaHash<String, String> parametros(String crudo) {
         TablaHash<String, String> campos = new TablaHash<>();
         if (crudo == null || crudo.isEmpty()) return campos;
@@ -217,7 +213,6 @@ public class ServidorApi {
     private void archivo(HttpExchange x) throws IOException {
         String ruta = x.getRequestURI().getPath();
         Path archivo = carpetaWeb.resolve(ruta.equals("/") ? "index.html" : ruta.substring(1)).normalize();
-        // normalize() + startsWith impide salir de la carpeta web con rutas como /../
         if (!archivo.startsWith(carpetaWeb) || !Files.isRegularFile(archivo)) {
             enviar(x, 404, "text/plain; charset=utf-8", "No encontrado".getBytes(StandardCharsets.UTF_8));
             return;

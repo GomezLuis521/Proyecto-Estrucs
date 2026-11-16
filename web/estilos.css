@@ -1,5 +1,4 @@
-/* SavingCol: riel verde botella (tapa), papel de seguridad verde pálido, tinta azul-negra.
-   Un tono fijo por estructura de datos, usado solo en su sello. */
+/* SavingCol */
 :root {
   --papel: oklch(0.972 0.012 160);
   --hoja: oklch(0.996 0.004 160);
@@ -51,7 +50,7 @@ a { color: var(--sello); text-underline-offset: 3px; }
 .saltar { position: absolute; left: -999px; top: 8px; background: var(--hoja); padding: 8px 12px; z-index: 10; }
 .saltar:focus { left: 8px; }
 
-/* ---------- riel ---------- */
+
 .riel { background: var(--tapa); color: var(--tapa-texto); padding: 20px 12px; display: flex; flex-direction: column; gap: 20px;
   position: sticky; top: 0; height: 100vh; overflow-y: auto; }
 .marca { display: flex; align-items: center; gap: 10px; padding: 0 8px; color: inherit; text-decoration: none;
@@ -65,7 +64,7 @@ a { color: var(--sello); text-underline-offset: 3px; }
 .riel nav svg { flex: none; }
 .riel :focus-visible { outline-color: var(--tapa-texto); }
 
-/* ---------- barra superior ---------- */
+/*  barra superior */
 .cuerpo { min-width: 0; }
 .barra { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 10px 28px;
   background: var(--hoja); border-bottom: 1px solid var(--filete); position: sticky; top: 0; z-index: 5; }
@@ -85,7 +84,7 @@ main { padding: 28px 28px 64px; max-width: 1320px; outline: none; }
 /* Vitrina 3D: página propia (vitrina.html) incrustada para no mezclar sus estilos con la consola. */
 .vitrina { display: block; width: 100%; height: calc(100vh - 116px); min-height: 600px; border: 1px solid var(--filete); border-radius: var(--radio); }
 
-/* ---------- panel ---------- */
+/*  panel  */
 .panel { background: var(--hoja); border: 1px solid var(--filete); border-radius: var(--radio); min-width: 0; }
 .panel > header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px;
   padding: 12px 16px; border-bottom: 1px solid var(--filete); }
@@ -104,7 +103,7 @@ a.sello:hover { background: color-mix(in oklch, var(--tono) 18%, var(--hoja)); }
 .sello--lista { --tono: var(--e-lista); } .sello--pila { --tono: var(--e-pila); } .sello--cola { --tono: var(--e-cola); }
 .sello--arbol { --tono: var(--e-arbol); } .sello--hash { --tono: var(--e-hash); } .sello--grafo { --tono: var(--e-grafo); }
 
-/* ---------- cifras del resumen ---------- */
+/*  cifras del resumen  */
 .cifras { display: flex; flex-wrap: wrap; gap: 0; background: var(--hoja); border: 1px solid var(--filete); border-radius: var(--radio); }
 .cifras > div { padding: 14px 20px; flex: 1 1 180px; border-left: 1px solid var(--filete); margin-left: -1px; }
 .cifras dt { font-size: 0.8125rem; color: var(--tinta-2); }
@@ -120,7 +119,7 @@ progress::-webkit-progress-bar { background: var(--hoja-2); }
 progress::-webkit-progress-value { background: var(--credito); }
 progress::-moz-progress-bar { background: var(--credito); }
 
-/* ---------- tablas (renglones de libreta) ---------- */
+/*  tablas   */
 .tabla-caja { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; }
 th, td { padding: 8px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--filete); }
@@ -139,7 +138,7 @@ tr.revertida .concepto { text-decoration: line-through; text-decoration-color: v
 .etiqueta--bien { --tono: var(--credito); } .etiqueta--mal { --tono: var(--debito); } .etiqueta--aviso { --tono: var(--alerta); }
 .etiqueta--llena { background: var(--tono); color: var(--hoja); border-color: var(--tono); }
 
-/* ---------- formularios ---------- */
+/*  formularios  */
 .campo { display: grid; gap: 4px; font-size: 0.8125rem; font-weight: 500; color: var(--tinta-2); min-width: 0; }
 .campo--linea { grid-auto-flow: column; align-items: center; gap: 10px; }
 input, select, button { font: inherit; color: inherit; }
@@ -177,7 +176,7 @@ input[inputmode="numeric"] { font-family: var(--mono); }
 .segmento label:has(:checked) { background: var(--hoja); color: var(--tinta); box-shadow: 0 1px 3px oklch(0.24 0.035 255 / 0.18); }
 .segmento label:has(:focus-visible) { outline: 2px solid var(--sello); outline-offset: 1px; }
 
-/* ---------- listas ---------- */
+/*  listas  */
 .alertas li { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; padding: 10px 16px; border-bottom: 1px solid var(--filete); }
 .alertas li:last-child { border-bottom: 0; }
 .alertas time { grid-column: 2; font-size: 0.75rem; color: var(--tinta-2); font-family: var(--mono); }
@@ -217,7 +216,7 @@ input[inputmode="numeric"] { font-family: var(--mono); }
 .grafo .arista { fill: none; stroke: var(--e-grafo); }
 .grafo .nodo { fill: var(--hoja); stroke: var(--e-grafo); stroke-width: 2; }
 
-/* ---------- aviso flotante ---------- */
+/*  aviso flotante  */
 .aviso { position: fixed; right: 20px; bottom: 20px; max-width: min(440px, calc(100vw - 40px)); padding: 12px 16px; z-index: 20;
   background: var(--tinta); color: var(--hoja); border-radius: var(--radio); box-shadow: 0 8px 24px oklch(0.24 0.035 255 / 0.28);
   animation: entrar 260ms var(--salida); }
@@ -227,7 +226,7 @@ input[inputmode="numeric"] { font-family: var(--mono); }
 @keyframes asentar { from { background-color: color-mix(in oklch, var(--sello) 22%, transparent); } }
 @keyframes entrar { from { opacity: 0; transform: translateY(8px); } }
 
-/* ---------- pantallas angostas ---------- */
+/*  pantallas angostas  */
 @media (max-width: 1080px) {
   .rejilla, .rejilla--mitad, .deshacer { grid-template-columns: minmax(0, 1fr); }
   .rejilla--operar > .columna:last-child { order: -1; }

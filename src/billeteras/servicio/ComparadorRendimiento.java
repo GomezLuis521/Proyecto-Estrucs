@@ -6,10 +6,7 @@ import billeteras.estructuras.ListaEnlazada;
 import billeteras.estructuras.TablaHash;
 import java.util.Comparator;
 
-/**
- * Compara el tiempo real de distintas estructuras haciendo el mismo trabajo:
- * insertar n elementos, buscar 1.000 claves y obtener los 10 mayores.
- */
+/**Compara el tiempo real de distintas estructuras haciendo el mismo trabajo*/
 public final class ComparadorRendimiento {
 
     public record Medicion(String operacion, String estructura, String complejidad, long nanosegundos) { }
@@ -21,7 +18,7 @@ public final class ComparadorRendimiento {
 
     public static ListaEnlazada<Medicion> comparar(int n) {
         n = Math.max(1_000, Math.min(n, 100_000));
-        medir(2_000); // calentamiento: deja que la JVM compile el código antes de medir
+        medir(2_000);
         return medir(n);
     }
 
@@ -29,7 +26,7 @@ public final class ComparadorRendimiento {
         long[] datos = new long[n];
         long semilla = 20262;
         for (int i = 0; i < n; i++) {
-            semilla = semilla * 6364136223846793005L + 1442695040888963407L; // generador congruencial: datos repetibles
+            semilla = semilla * 6364136223846793005L + 1442695040888963407L;  //datos repetibles
             datos[i] = semilla >>> 20;
         }
         ListaEnlazada<Medicion> r = new ListaEnlazada<>();

@@ -12,10 +12,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.function.Function;
 
-/**
- * Reportes e indicadores de uso. Cada reporte cuenta en una tabla hash (O(1) por movimiento)
- * y luego saca los primeros lugares con una cola de prioridad, sin ordenar todo el conjunto.
- */
+/**Reportes e indicadores de uso.*/
 public class Analitica {
 
     public record Conteo(String clave, String etiqueta, long veces, long monto) { }
@@ -24,7 +21,7 @@ public class Analitica {
 
     public Analitica(Plataforma plataforma) { this.plataforma = plataforma; }
 
-    /** Lista con las operaciones exitosas hechas en el período (extremos incluidos). */
+    /** Lista con las operaciones exitosas hechas en el período*/
     public ListaEnlazada<Transaccion> operacionesEnPeriodo(LocalDateTime desde, LocalDateTime hasta) {
         return plataforma.transacciones().filtrar(t -> t.exitosa() && t.tipo().reversible()
             && !t.fecha().isBefore(desde) && !t.fecha().isAfter(hasta));
@@ -52,7 +49,7 @@ public class Analitica {
         return primeros(conteos, cuantos, this::nombreUsuario);
     }
 
-    /** El primero de la lista es el usuario con mayor actividad en el período. */
+    /** El primero de la lista es el usuario con mayor actividad en el período */
     public ListaEnlazada<Conteo> usuariosMasActivos(ListaEnlazada<Transaccion> operaciones, int cuantos) {
         TablaHash<String, long[]> conteos = new TablaHash<>();
         for (Transaccion t : operaciones) contar(conteos, t.usuarioId(), t.valor());
@@ -74,7 +71,7 @@ public class Analitica {
         return primeros(conteos, Integer.MAX_VALUE, clave -> clave);
     }
 
-    /** Transacciones de mayor valor en el período: recorrido inverso del árbol ordenado por valor. */
+    /** Transacciones de mayor valor en el período: recorrido inverso del árbol ordenado por valor */
     public ListaEnlazada<Transaccion> mayoresTransacciones(LocalDateTime desde, LocalDateTime hasta, int cuantas) {
         return plataforma.porValor().mayores(cuantas,
             t -> t.exitosa() && !t.fecha().isBefore(desde) && !t.fecha().isAfter(hasta));

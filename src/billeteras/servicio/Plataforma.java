@@ -25,13 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.Locale;
 
-/**
- * Núcleo de la plataforma: guarda el estado y aplica las reglas del negocio.
- * Cada colección usa la estructura que mejor resuelve su consulta más frecuente:
- * tablas hash para llegar por identificación o código, árboles AVL para ordenar por puntos
- * o por valor, cola de prioridad para lo programado, cola para notificaciones, pilas para
- * deshacer, listas para historiales y grafos para las transferencias.
- */
+/**Núcleo de la plataforma: guarda el estado y aplica las reglas del negocio.*/
 public class Plataforma {
 
     public record ResultadoAvance(int ejecutadas, int rechazadas) { }
@@ -70,7 +64,6 @@ public class Plataforma {
         configuracion.poner(CONF_HORAS_AVISO, 24L);
     }
 
-    // ------------------------------------------------------------------ usuarios
 
     public Usuario registrarUsuario(String id, String nombre, String correo, String telefono) {
         id = requerido(id, "la identificación");
@@ -103,14 +96,14 @@ public class Plataforma {
         usuarios.eliminar(id);
     }
 
-    /** Búsqueda por identificación en la tabla hash: O(1) promedio. */
+    /** Búsqueda por identificación en la tabla hash*/
     public Usuario usuario(String id) {
         Usuario u = usuarios.obtener(id);
         if (u == null) throw new ErrorNegocio("No existe un usuario con la identificación " + id + ".");
         return u;
     }
 
-    // ---------------------------------------------------------------- billeteras
+
 
     public Billetera crearBilletera(String usuarioId, String nombre, TipoBilletera tipo) {
         Usuario u = usuario(usuarioId);
@@ -141,14 +134,14 @@ public class Plataforma {
         grafoBilleteras.eliminarVertice(codigo);
     }
 
-    /** Búsqueda por código en la tabla hash: O(1) promedio. */
+    /** Búsqueda por código en la tabla hash */
     public Billetera billetera(String codigo) {
         Billetera b = billeteras.obtener(codigo);
         if (b == null) throw new ErrorNegocio("No existe la billetera " + (codigo == null || codigo.isBlank() ? "indicada" : codigo) + ".");
         return b;
     }
 
-    // --------------------------------------------------------------- operaciones
+
 
     public Transaccion recargar(String usuarioId, String destino, long valor) {
         return ejecutar(TipoTransaccion.RECARGA, usuarioId, null, destino, valor, null);
@@ -171,7 +164,6 @@ public class Plataforma {
         try {
             moverDinero(t, u);
         } catch (ErrorNegocio e) {
-            // Una operación rechazada también queda en el historial y genera alerta.
             t.rechazar(e.getMessage());
             registrar(t, u);
             notificar(usuarioId, TipoNotificacion.OPERACION_RECHAZADA,
@@ -241,7 +233,7 @@ public class Plataforma {
         return b;
     }
 
-    /** Agrega la transacción a las listas de historial: global, del usuario, de cada billetera y de la contraparte. */
+    /** Agrega la transacción a las listas de historial */
     private void registrar(Transaccion t, Usuario u) {
         transacciones.agregar(t);
         u.historial().agregar(t);
@@ -257,7 +249,7 @@ public class Plataforma {
         if (contraparte != null && contraparte != u) contraparte.historial().agregar(t);
     }
 
-    /** Cambia los puntos y reubica al usuario en el árbol, que está ordenado por puntos. */
+    /** Cambia los puntos y reubica al usuario en el árbol*/
     private void ajustarPuntos(Usuario u, long delta) {
         if (delta == 0) return;
         Nivel antes = u.nivel();
@@ -287,12 +279,9 @@ public class Plataforma {
             + t.riesgo().name().toLowerCase(Locale.ROOT) + "): " + reglas + ".");
     }
 
-    // ----------------------------------------------------------------- reversión
 
-    /**
-     * Deshace la operación que está en la cima de la pila del usuario: devuelve el dinero,
-     * descuenta los puntos que había generado y deja constancia en el historial.
-     */
+
+    /** Deshace la operación que está en la cima de la pila del usuario: devuelve el dinero, descuenta los puntos que había generado y deja constancia en el historial.*/
     public Transaccion revertirUltima(String usuarioId) {
         Usuario u = usuario(usuarioId);
         Transaccion t = u.deshacer().cima();
@@ -329,7 +318,7 @@ public class Plataforma {
         return reversion;
     }
 
-    // --------------------------------------------------------------- programadas
+
 
     public OperacionProgramada programar(String usuarioId, TipoTransaccion tipo, String origen, String destino, long valor,
                                          LocalDateTime fecha, Periodicidad periodicidad, String descripcion) {
@@ -361,10 +350,7 @@ public class Plataforma {
             throw new ErrorNegocio("No existe la operación programada " + id + ".");
     }
 
-    /**
-     * Simula el paso del tiempo: adelanta el reloj y ejecuta, en orden de prioridad,
-     * todas las operaciones programadas cuya fecha ya llegó.
-     */
+    /**adelanta el reloj y ejecuta, en orden de prioridad, todas las operaciones programadas cuya fecha ya llegó.*/
     public ResultadoAvance avanzarReloj(long horas) {
         if (horas < 1 || horas > 24 * 90) throw new ErrorNegocio("El reloj avanza entre 1 hora y 90 días por vez.");
         LocalDateTime hasta = ahora.plusHours(horas);
@@ -379,7 +365,7 @@ public class Plataforma {
                 notificar(op.usuarioId(), TipoNotificacion.PROGRAMADA_EJECUTADA, "Se ejecutó «" + op.descripcion() + "» por "
                     + dinero(op.valor()) + " y sumó " + t.puntos() + " puntos con bono.");
             } catch (ErrorNegocio e) {
-                rechazadas++; // ejecutar() ya dejó el rechazo en el historial y avisó al usuario
+                rechazadas++;
             }
             if (op.reprogramar()) programadas.insertar(op);
         }
@@ -399,8 +385,6 @@ public class Plataforma {
                 + dinero(op.valor()) + " se ejecutará el " + op.fecha().format(FECHA_CORTA) + ".");
         }
     }
-
-    // ---------------------------------------------------------------- beneficios
 
     public Canje canjear(String usuarioId, String codigoBeneficio) {
         Usuario u = usuario(usuarioId);
@@ -430,7 +414,7 @@ public class Plataforma {
         registrar(t, u);
     }
 
-    // ------------------------------------------------------------ notificaciones
+
 
     private void notificar(String usuarioId, TipoNotificacion tipo, String mensaje) {
         notificacionesPendientes.encolar(new Notificacion("N-" + (++consecutivoNotificacion), usuarioId, tipo, mensaje, ahora));
@@ -448,10 +432,10 @@ public class Plataforma {
 
     // ------------------------------------------------------------------ consultas
 
-    /** Usuarios ordenados de más a menos puntos: recorrido inverso del árbol. */
+    /** Usuarios ordenados de más a menos puntos */
     public ListaEnlazada<Usuario> ranking() { return rankingPuntos.mayores(Integer.MAX_VALUE, u -> true); }
 
-    /** Usuarios con puntos entre minimo y maximo: consulta por rango en el árbol, O(log n + k). */
+    /** Usuarios con puntos entre minimo y maximo */
     public ListaEnlazada<Usuario> usuariosPorPuntos(long minimo, long maximo) {
         return rankingPuntos.rango(ClaveOrden.desde(minimo), ClaveOrden.hasta(maximo));
     }
