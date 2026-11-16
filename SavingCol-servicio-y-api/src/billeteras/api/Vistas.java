@@ -20,10 +20,7 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Convierte el estado de la plataforma en mapas listos para serializar a JSON.
- * Es la única capa que usa colecciones de java.util: solo como formato de salida.
- */
+
 final class Vistas {
 
     private final Plataforma p;
@@ -109,11 +106,11 @@ final class Vistas {
         m.put("billeteras", billeteras);
 
         ListaEnlazada<Object> historial = new ListaEnlazada<>();
-        for (Transaccion t : u.historial()) historial.agregarAlInicio(transaccion(t)); // lo más reciente arriba
+        for (Transaccion t : u.historial()) historial.agregarAlInicio(transaccion(t)); 
         m.put("historial", historial);
 
         ListaEnlazada<Object> pila = new ListaEnlazada<>();
-        for (Transaccion t : u.deshacer()) pila.agregar(transaccion(t)); // de la cima hacia el fondo
+        for (Transaccion t : u.deshacer()) pila.agregar(transaccion(t)); 
         m.put("pila", pila);
 
         ListaEnlazada<Object> notificaciones = new ListaEnlazada<>();
